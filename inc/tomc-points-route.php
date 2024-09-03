@@ -3,6 +3,9 @@
 add_action('rest_api_init', 'tomcPointsRegisterRoute');
 
 function tomcPointsRegisterRoute() {
+    //the first two arguments in the register_rest_route function have to match up with the url in the ajax request in the Patronage-Points.js file
+    //the method in the array in the third argument has to match up with the type specified in the ajax request
+    //the callback in the array has to match up with a function name in this file.
     register_rest_route('tomcPoints/v1', 'getPointsByDateRange', array(
         'methods' => 'GET',
         'callback' => 'getPointsByDateRange'
@@ -17,31 +20,15 @@ function getPointsByDateRange($data) {
     $users_table = $wpdb->prefix . "users";
     $usermeta_table = $wpdb->prefix . "usermeta";
     $query = '
-        select users.display_name, count(posts.id) as points
+        select users.id, users.display_name, count(posts.id) as points
         from %i posts
         join %i users on posts.post_author = users.id
         and posts.post_type = "product"
         and posts.post_date >= %s
         and posts.post_date <= %s
-        join %i usermeta on users.id = usermeta.user_id
-        and usermeta.meta_key like %s
-        and usermeta.meta_value like %s
-        group by posts.id
-        union
-        select users.display_name, count(posts.id) as points
-        from %i posts
-        join %i users on posts.post_author = users.id
-        and posts.post_type = "product"
-        and posts.post_date >= %s
-        and posts.post_date <= %s
-        join %i usermeta on users.id = usermeta.user_id
-        and usermeta.meta_key like %s
-        and usermeta.meta_value like %s
-        group by posts.id;
+        group by users.id;
     ';
-    //assign points to creator-members for uploading a product within the given date range
-    //assign points to admin for uploading a product within the given date range
-    $results = $wpdb->get_results($wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('creator-member') . '%', $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('admin') . '%'), ARRAY_A);
+    //the query assigns points to users for uploading a product within the given date range
+    $results = $wpdb->get_results($wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate), ARRAY_A);
     return $results;
-    // return $wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('creator-member') . '%');
 }
