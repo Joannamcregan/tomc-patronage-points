@@ -17,13 +17,17 @@ get_header();
 ?><main>
     <div class="banner"><h1 class="centered-text">Patronage Points</h1></div>
     <br>
-    <p class="centered-text">Select a date range to see how many points members earned during a certain period of time.</p>
-    <label for="tomc-points-start-date" class="centered-text block">start date:</label>
-    <input type="date" id="tomc-points-start-date" class="block"></input>
-    <label for="tomc-points-end-date" class="centered-text block">end date:</label>
-    <input type="date" id="tomc-points-end-date" class="block"></input>
-    <button class="purple-button">set date range</button>
-    <div class="generic-content alt-accent-wrapper-1" id="tomc-all-points-display-section">
+    <div class="hidden" id="tomc-points-dates-section">
+        <p class="centered-text">Select a date range to see how many points members earned during a certain period of time.</p>
+        <label for="tomc-points-start-date" class="centered-text block"><strong>start date:</strong></label>
+        <input type="date" id="tomc-points-start-date" class="block rounded-centered-date-input"></input>
+        <label for="tomc-points-end-date" class="centered-text block"><strong>end date:</strong></label>
+        <input type="date" id="tomc-points-end-date" class="block rounded-centered-date-input"></input>
+        <p class="centered-text hidden" id="tomc-points-no-start-date-error">Choose a start date.</p>
+        <p class="centered-text hidden" id="tomc-points-no-end-date-error">Choose an end date.</p>
+    </div>
+    <button class="purple-button" id="tomc-points-set-dates-button">set date range</button>
+    <div class="generic-content alt-accent-wrapper-1" id="tomc-points-display-section">
         <h2 class="centered-text">Total Points</h2>
         <?php if (count($results) > 0){
             for ($i = 0; $i < count($results); $i++){

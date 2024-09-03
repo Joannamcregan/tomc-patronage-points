@@ -2,43 +2,65 @@ import $ from 'jquery';
 
 class PatronagePoints{
     constructor(){
-        this.formSection = $('#tomcIsbnInfoFieldsDiv');
+        this.setDatesButton = $('#tomc-points-set-dates-button');
+        this.dateRangeSection = $('#tomc-points-dates-section');
+        this.startDate = $('#tomc-points-start-date');
+        this.endDate = $('#tomc-points-end-date');
+        this.pointsSection = $('#tomc-points-display-section');
         this.events();
     }
     events(){             
-        this.product.on('change', this.populate.bind(this));
+        this.setDatesButton.on('click', this.showDates.bind(this));
     }
-    populate(){
-        var productId = this.product.val();
-        if (productId > 0){
+    showDates(){
+        this.dateRangeSection.removeClass('hidden');
+        this.setDatesButton.removeClass('purple-button');
+        this.setDatesButton.addClass('orange-button');
+        this.setDatesButton.on('click', this.setDates.bind(this));
+    }
+    setDates(){
+        let startDate = this.startDate.val();
+        let endDate = this.endDate.val();
+        if (startDate != '' && endDate != ''){
+            $('#tomc-points-no-start-date-error').addClass('hidden');
+            $('#tomc-points-no-end-date-error').addClass('hidden');
             $.ajax({
                 beforeSend: (xhr) => {
                     xhr.setRequestHeader('X-WP-Nonce', marketplaceData.nonce);
                 },
-                url: tomcBookorgData.root_url + '/wp-json/tomcISBN/v1/populate',
+                url: tomcBookorgData.root_url + '/wp-json/tomcPoints/v1/getPointsByDateRange',
                 type: 'GET',
                 data: {
-                    'productId': productId
+                    'startDate': startDate,
+                    'endDate': endDate
                 },
                 success: (response) => {
                     console.log(response);
+                    this.pointsSection.html('');
+                    let newHeading = $('<h2/>').addClass('centered-text').html('<h2>Points Earned Between ' + startDate + ' and ' + endDate);
+                    this.pointsSection.append(newHeading);
+                    //we will have to fix the date formatting in the heading
                     if (response.length > 0){
-                        this.title.val(response[0]['title']);
-                        this.subtitle.val(response[0]['subtitle']);
-                        this.description.val(response[0]['description']);
-                        this.format.val(response[0]['format']);
-                        this.contributor1.val(response[0]['contributor']);
-                        this.biography1.val(response[0]['biography']);
-                        this.publicationdate.val(response[0]['publicationdate0'] ? response[0]['publicationdate0'] : response[0]['publicationdate1']);
-                        this.status.val(response[0]['islive'] === 1 ? 'status_active' : 'status_forthcoming');
-                        this.price.val('$' + response[0]['price']);
-                        this.language.val(response[0]['language']);
+                        for (let i = 0; i < response.length; i++){
+                            //we will need to output the display name and point total of each item in the response
+                        }
                     }
                 },
                 error: (response) => {
                     console.log(response);
                 }
             })
+        } else {
+            if (startDate == ''){
+                $('#tomc-points-no-start-date-error').removeClass('hidden');
+            } else {
+                $('#tomc-points-no-start-date-error').addClass('hidden');
+            }
+            if (endDate == ''){
+                $('#tomc-points-no-end-date-error').removeClass('hidden');
+            } else {
+                $('#tomc-points-no-end-date-error').addClass('hidden');
+            }
         }
     }
 }

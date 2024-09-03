@@ -25,9 +25,23 @@ function getPointsByDateRange($data) {
         and posts.post_date <= %s
         join %i usermeta on users.id = usermeta.user_id
         and usermeta.meta_key like %s
-        and usermeta.meta_value like %s;
+        and usermeta.meta_value like %s
+        group by posts.id
+        union
+        select users.display_name, count(posts.id) as points
+        from %i posts
+        join %i users on posts.post_author = users.id
+        and posts.post_type = "product"
+        and posts.post_date >= %s
+        and posts.post_date <= %s
+        join %i usermeta on users.id = usermeta.user_id
+        and usermeta.meta_key like %s
+        and usermeta.meta_value like %s
+        group by posts.id;
     ';
     //assign points to creator-members for uploading a product within the given date range
-    $results = $wpdb->get_results($wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities')), '%' . $wpdb->esc_like('creator-member') . '%', ARRAY_A);
+    //assign points to admin for uploading a product within the given date range
+    $results = $wpdb->get_results($wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('creator-member') . '%', $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('admin') . '%'), ARRAY_A);
     return $results;
+    // return $wpdb->prepare($query, $posts_table, $users_table, $startDate, $endDate, $usermeta_table, '%' . $wpdb->esc_like('_capabilities') . '%', '%' . $wpdb->esc_like('creator-member') . '%');
 }
